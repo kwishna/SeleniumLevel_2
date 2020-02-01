@@ -1,0 +1,7 @@
+/bin/
+.idea
+BDD_CUCUMBER_LEARN
+WORKING JARS FOR CUCUMBER
+test-output
+*.jar
+*.exe

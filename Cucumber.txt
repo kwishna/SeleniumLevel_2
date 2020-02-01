@@ -1,0 +1,106 @@
+The regular expression I'm logged in matches I'm logged in and I'm logged in as an admin. To avoid ambiguous matches, use ^I'm logged in$.
+
+When you put part of a regular expression in parentheses, whatever it matches gets captured for use later. This is known as a “capture group.”
+[Given("^I'm logged in as an? (.*)$")]
+
+When("^(?:I'm logged|I log) in as an? (.*)$") : Logical OR
+----------------------------------------------------------------------
+tags = {"@smoke", "@add"}
+tags = "@smoke and @fast"
+tags = "not @smoke"
+
+@fast	Scenarios tagged with @fast
+@wip and not @slow	Scenarios tagged with @wip that aren’t also tagged with @slow
+@smoke and @fast	Scenarios tagged with both @smoke and @fast
+@gui or @database	Scenarios tagged with either @gui or @database
+
+
+@After("@browser and not @headless")
+public void doSomethingAfter(Scenario scenario){
+}
+Lambda style:-
+
+After("@browser and not @headless", (Scenario scenario) -> {
+});
+---------------------------------------------------------------------
+Data Tables Handling With Custom Object :-
+
+public class TypeRegistryConfiguration implements TypeRegistryConfigurer {
+
+    @Override
+    public Locale locale() {
+        return ENGLISH;
+    }
+
+    @Override
+    public void configureTypeRegistry(TypeRegistry typeRegistry) {
+        typeRegistry.defineDataTableType(new DataTableType(
+            Grocery.class,
+            (Map<String, String> row) -> new Grocery(
+                row.get("name"),
+                Price.fromString(row.get("price"))
+            )
+        ));
+    }
+}
+This may look a bit tedious. But you can also use your favourite object mapper library instead.
+
+-----	-----	-----
+
+ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+typeRegistry.defineDataTableType(new DataTableType(
+    Grocery.class,
+    (Map<String, String> row) -> objectMapper.convertValue(row, Grocery.class))
+);
+-------------------------------------------------------------------------------------
+Using Transfomer :-
+
+public class GherkinDateConverter extends Transformer<Date> {
+ 
+    SimpleDateFormat monthDayYearDash = new SimpleDateFormat("MM-dd-yyyy");
+ 
+    @Override
+    public Date transform(String date) {
+        return monthDayYearDash.parse(date);
+    }
+}
+
+@Given("^the user birthdate is set as ([\\d\\/-]+)$")
+public void setDOB(@Transform(GherkinDateConverter.class) Date birthdate) {
+	
+	public class GherkinDateConverter extends Transformer<Date> {
+ 
+    		SimpleDateFormat yearMonthDayDash = new SimpleDateFormat("yyyy-MM-dd");
+    		SimpleDateFormat monthDayYearDash = new SimpleDateFormat("MM-dd-yyyy");
+    		SimpleDateFormat yearMonthDaySlash = new SimpleDateFormat("yyyy/MM/dd");
+    		SimpleDateFormat monthDayYearSlash = new SimpleDateFormat("MM/dd/yyyy");
+ 
+    @Override
+    public Date transform(String date) {
+        try {
+            if (date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return yearMonthDayDash.parse(date);
+            }
+            if (date.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                return monthDayYearDash.parse(date);
+            }
+            if (date.matches("\\d{4}\\/\\d{2}\\/\\d{2}")) {
+                return yearMonthDaySlash.parse(date);
+            }
+            if (date.matches("\\d{2}\\/\\d{2}\\/\\d{4}")) {
+                return monthDayYearSlash.parse(date);
+            }
+            if (date.matches("\\d+")) {
+                return new Date(Long.valueOf(date));
+            }
+            Logger.getLogger(GherkinDateConverter.class).error("Date '" + date + "' is not a valid date format");
+        } catch (ParseException e) {
+            Logger.getLogger(GherkinDateConverter.class).error(e.getMessage());
+        }
+        return new Date();
+    }
+}
+----------------------------------------------------------------------------------------------------------------
+Extra Annotation Is Cucumber : https://www.waitingforcode.com/testing/advanced-tests-with-cucumber/read
+Running Parallel Scenario Using TestNG : https://github.com/cucumber/cucumber-jvm/tree/v4.0.0/testng
